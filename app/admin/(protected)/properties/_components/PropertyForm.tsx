@@ -91,8 +91,8 @@ export default function PropertyForm({ initialValues, propertyId }: PropertyForm
     setLoading(false)
 
     if (res.ok) {
-      router.push('/admin/properties')
       router.refresh()
+      router.push('/admin/properties')
     } else {
       setError('Something went wrong. Please try again.')
     }

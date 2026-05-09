@@ -1,6 +1,8 @@
 import { getSiteContent } from '@/lib/data'
 import ContentEditor from './_components/ContentEditor'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ContentPage() {
   const content = await getSiteContent()
   return (
