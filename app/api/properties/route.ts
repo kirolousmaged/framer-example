@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
     sqft: body.sqft,
     price: body.price,
     image: body.image,
+    gallery: Array.isArray(body.gallery) ? body.gallery : [],
     status: body.status ?? 'For Sale',
     description: body.description ?? '',
     createdAt: new Date().toISOString(),
