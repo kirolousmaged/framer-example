@@ -30,8 +30,6 @@ function formatDate(iso: string) {
 export default function BlogSection({ posts }: { posts: Post[] }) {
   const displayed = posts.slice(0, 3)
 
-  if (displayed.length === 0) return null
-
   return (
     <section className="bg-off-white py-28 md:py-32">
       <div className="mx-auto w-[90%] max-w-screen-xl flex flex-col items-center gap-12">
@@ -40,24 +38,30 @@ export default function BlogSection({ posts }: { posts: Post[] }) {
           title="Real Estate Tips & Expert Advice"
         />
 
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-60px' }}
-        >
-          {displayed.map((post) => (
-            <motion.div key={post.id} variants={cardVariants}>
-              <BlogCard
-                date={formatDate(post.createdAt)}
-                title={post.title}
-                href={`/blog/${post.slug}`}
-                image={post.image}
-              />
-            </motion.div>
-          ))}
-        </motion.div>
+        {displayed.length === 0 ? (
+          <p className="font-raleway text-off-black/40 text-center py-8">
+            No posts yet — check back soon.
+          </p>
+        ) : (
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-60px' }}
+          >
+            {displayed.map((post) => (
+              <motion.div key={post.id} variants={cardVariants}>
+                <BlogCard
+                  date={formatDate(post.createdAt)}
+                  title={post.title}
+                  href={`/blog/${post.slug}`}
+                  image={post.image}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
 
         <Button label="View All" href="/blog" variant="filled" colorScheme="accent" />
       </div>
