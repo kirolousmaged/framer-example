@@ -1,3 +1,4 @@
+import { getSiteContent } from '@/lib/data'
 import Hero from '@/components/ui/Hero'
 import SolutionsMenu from '@/components/ui/SolutionsMenu'
 import About from '@/components/ui/About'
@@ -8,10 +9,15 @@ import BlogSection from '@/components/ui/BlogSection'
 import FAQ from '@/components/ui/FAQ'
 import CTA from '@/components/ui/CTA'
 
-export default function HomePage() {
+export default async function HomePage() {
+  const content = await getSiteContent()
   return (
     <>
-      <Hero />
+      <Hero
+        subtitle={content.hero_subtitle}
+        tagline={content.hero_tagline}
+        bgImage={content.hero_bg_image}
+      />
       <SolutionsMenu />
       <About />
       <Stats />

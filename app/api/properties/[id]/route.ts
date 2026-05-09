@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getProperties, saveProperties } from '@/lib/data'
+import { getPropertyById, updateProperty, deleteProperty } from '@/lib/data'
 
 export async function GET(
   _: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const properties = await getProperties()
-  const property = properties.find((p) => p.id === id)
+  const property = await getPropertyById(id)
   if (!property) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   return NextResponse.json(property)
 }
@@ -18,14 +17,20 @@ export async function PUT(
 ) {
   const { id } = await params
   const body = await request.json()
-  const properties = await getProperties()
-  const index = properties.findIndex((p) => p.id === id)
-  if (index === -1) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-
-  properties[index] = { ...properties[index], ...body, id }
-  await saveProperties(properties)
-
-  return NextResponse.json(properties[index])
+  const property = await updateProperty(id, {
+    slug: body.slug,
+    title: body.title,
+    beds: Number(body.beds),
+    baths: Number(body.baths),
+    sqft: body.sqft,
+    price: body.price,
+    image: body.image,
+    gallery: Array.isArray(body.gallery) ? body.gallery : [],
+    status: body.status,
+    description: body.description ?? '',
+  })
+  if (!property) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  return NextResponse.json(property)
 }
 
 export async function DELETE(
@@ -33,8 +38,6 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const properties = await getProperties()
-  const filtered = properties.filter((p) => p.id !== id)
-  await saveProperties(filtered)
+  await deleteProperty(id)
   return NextResponse.json({ success: true })
 }

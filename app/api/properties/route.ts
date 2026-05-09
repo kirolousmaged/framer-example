@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getProperties, saveProperties } from '@/lib/data'
-import type { Property } from '@/lib/data'
+import { getProperties, createProperty } from '@/lib/data'
 
 export async function GET() {
   const properties = await getProperties()
@@ -9,7 +8,6 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const body = await request.json()
-  const properties = await getProperties()
 
   const slug =
     body.slug ||
@@ -18,7 +16,7 @@ export async function POST(request: NextRequest) {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '')
 
-  const newProperty: Property = {
+  const property = await createProperty({
     id: crypto.randomUUID(),
     slug,
     title: body.title,
@@ -30,11 +28,7 @@ export async function POST(request: NextRequest) {
     gallery: Array.isArray(body.gallery) ? body.gallery : [],
     status: body.status ?? 'For Sale',
     description: body.description ?? '',
-    createdAt: new Date().toISOString(),
-  }
+  })
 
-  properties.push(newProperty)
-  await saveProperties(properties)
-
-  return NextResponse.json(newProperty, { status: 201 })
+  return NextResponse.json(property, { status: 201 })
 }

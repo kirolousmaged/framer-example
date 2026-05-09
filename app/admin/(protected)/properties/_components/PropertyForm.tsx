@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import type { Property } from '@/lib/data'
@@ -38,6 +38,17 @@ export default function PropertyForm({ initialValues, propertyId }: PropertyForm
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [galleryInput, setGalleryInput] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const mainImageRef = useRef<HTMLInputElement>(null)
+  const galleryFileRef = useRef<HTMLInputElement>(null)
+
+  async function uploadFile(file: File): Promise<string> {
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await fetch('/api/upload', { method: 'POST', body: fd })
+    const data = await res.json()
+    return data.url as string
+  }
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -200,25 +211,42 @@ export default function PropertyForm({ initialValues, propertyId }: PropertyForm
 
         <div className="flex flex-col gap-2">
           <label className={labelClass}>Image URL *</label>
-          <input
-            type="url"
-            name="image"
-            value={form.image}
-            onChange={handleChange}
-            required
-            placeholder="https://..."
-            className={inputClass}
-          />
+          <div className="flex gap-3">
+            <input
+              type="url"
+              name="image"
+              value={form.image}
+              onChange={handleChange}
+              required
+              placeholder="https://..."
+              className={inputClass}
+            />
+            <button
+              type="button"
+              onClick={() => mainImageRef.current?.click()}
+              disabled={uploading}
+              className="flex-shrink-0 px-4 py-3 border border-gray-200 text-off-black/60 font-raleway text-sm hover:border-off-black hover:text-off-black transition-colors disabled:opacity-50 whitespace-nowrap"
+            >
+              {uploading ? 'Uploading…' : 'Upload'}
+            </button>
+            <input
+              ref={mainImageRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={async (e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                setUploading(true)
+                const url = await uploadFile(file)
+                setForm((prev) => ({ ...prev, image: url }))
+                setUploading(false)
+              }}
+            />
+          </div>
           {form.image && (
             <div className="relative w-full max-w-sm aspect-[4/3] overflow-hidden mt-2 bg-gray-100">
-              <Image
-                src={form.image}
-                alt="Preview"
-                fill
-                className="object-cover"
-                sizes="384px"
-                onError={() => {}}
-              />
+              <Image src={form.image} alt="Preview" fill className="object-cover" sizes="384px" onError={() => {}} />
             </div>
           )}
         </div>
@@ -247,7 +275,7 @@ export default function PropertyForm({ initialValues, propertyId }: PropertyForm
             value={galleryInput}
             onChange={(e) => setGalleryInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addGalleryImage() } }}
-            placeholder="https://... paste image URL and press Add"
+            placeholder="Paste image URL or upload a file"
             className={inputClass}
           />
           <button
@@ -257,6 +285,32 @@ export default function PropertyForm({ initialValues, propertyId }: PropertyForm
           >
             Add
           </button>
+          <button
+            type="button"
+            onClick={() => galleryFileRef.current?.click()}
+            disabled={uploading}
+            className="flex-shrink-0 px-4 py-3 border border-gray-200 text-off-black/60 font-raleway text-sm hover:border-off-black hover:text-off-black transition-colors disabled:opacity-50 whitespace-nowrap"
+          >
+            {uploading ? '…' : 'Upload'}
+          </button>
+          <input
+            ref={galleryFileRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={async (e) => {
+              const files = Array.from(e.target.files ?? [])
+              if (!files.length) return
+              setUploading(true)
+              for (const file of files) {
+                const url = await uploadFile(file)
+                setForm((prev) => ({ ...prev, gallery: [...(prev.gallery ?? []), url] }))
+              }
+              setUploading(false)
+              e.target.value = ''
+            }}
+          />
         </div>
 
         {/* Gallery grid */}

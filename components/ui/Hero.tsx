@@ -18,21 +18,25 @@ const itemVariants = {
   },
 }
 
-export default function Hero() {
+interface HeroProps {
+  subtitle?: string
+  tagline?: string
+  bgImage?: string
+}
+
+export default function Hero({
+  subtitle = 'Your Next Move Starts Here',
+  tagline = 'California Real Estate',
+  bgImage = 'https://framerusercontent.com/images/XHjb2nvN3Jd2DDPrmmf2kYt3IM.jpg',
+}: HeroProps) {
   return (
     <section className="relative h-screen flex flex-col overflow-hidden">
-      {/* Background image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage:
-            'url(https://framerusercontent.com/images/XHjb2nvN3Jd2DDPrmmf2kYt3IM.jpg)',
-        }}
+        style={{ backgroundImage: `url(${bgImage})` }}
       />
-      {/* Dark overlay — 55% opacity to match Framer */}
       <div className="absolute inset-0 bg-black/55" />
 
-      {/* Content wrapper — flex-1 keeps it vertically centered */}
       <div className="relative z-10 flex-1 flex items-center justify-center">
         <div className="w-[90%] max-w-screen-xl">
           <motion.div
@@ -41,16 +45,14 @@ export default function Hero() {
             initial="hidden"
             animate="visible"
           >
-            {/* Title stack */}
             <div className="flex flex-col items-center gap-8 w-full">
               <motion.p
                 variants={itemVariants}
                 className="font-raleway text-xl uppercase tracking-widest text-white/[0.67] text-center"
               >
-                Your Next Move Starts Here
+                {subtitle}
               </motion.p>
 
-              {/* Heading 1 — Italiana 180px desktop, responsive down */}
               <motion.h1
                 variants={itemVariants}
                 className="font-italiana text-6xl md:text-8xl xl:text-[11.25rem] leading-none text-white w-full text-center"
@@ -62,33 +64,21 @@ export default function Hero() {
                 variants={itemVariants}
                 className="font-raleway text-2xl md:text-3xl text-white/[0.67] text-center w-full"
               >
-                California Real Estate
+                {tagline}
               </motion.p>
             </div>
 
-            {/* CTA buttons */}
             <motion.div
               variants={itemVariants}
               className="flex flex-col sm:flex-row gap-4 items-center justify-center"
             >
-              <Button
-                label="View Properties"
-                href="/featured-properties"
-                variant="filled"
-                colorScheme="white"
-              />
-              <Button
-                label="Let's Connect"
-                href="/contact"
-                variant="border"
-                colorScheme="white"
-              />
+              <Button label="View Properties" href="/featured-properties" variant="filled" colorScheme="white" />
+              <Button label="Let's Connect" href="/contact" variant="border" colorScheme="white" />
             </motion.div>
           </motion.div>
         </div>
       </div>
 
-      {/* Scroll indicator — in flow at the bottom, never overlaps buttons */}
       <motion.div
         className="relative z-10 flex justify-center pb-10 text-white/60"
         initial={{ opacity: 0 }}
@@ -100,16 +90,7 @@ export default function Hero() {
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
         >
-          <svg
-            width="35"
-            height="35"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+          <svg width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="m7 8 5 5 5-5" />
             <path d="m7 13 5 5 5-5" />
           </svg>
