@@ -151,6 +151,88 @@ export async function deleteContact(id: string): Promise<void> {
   await sql`DELETE FROM contacts WHERE id = ${id}`
 }
 
+// ─── Posts (Blog) ─────────────────────────────────────────────────────────────
+
+export interface Post {
+  id: string
+  slug: string
+  title: string
+  excerpt: string
+  content: string
+  image: string
+  published: boolean
+  createdAt: string
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapPost(row: any): Post {
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    excerpt: row.excerpt ?? '',
+    content: row.content ?? '',
+    image: row.image ?? '',
+    published: row.published ?? false,
+    createdAt: row.created_at,
+  }
+}
+
+export async function getPosts(publishedOnly = false): Promise<Post[]> {
+  try {
+    const rows = publishedOnly
+      ? await sql`SELECT * FROM posts WHERE published = true ORDER BY created_at DESC`
+      : await sql`SELECT * FROM posts ORDER BY created_at DESC`
+    return rows.map(mapPost)
+  } catch {
+    return []
+  }
+}
+
+export async function getPost(slug: string): Promise<Post | null> {
+  const rows = await sql`SELECT * FROM posts WHERE slug = ${slug} LIMIT 1`
+  return rows.length ? mapPost(rows[0]) : null
+}
+
+export async function getPostById(id: string): Promise<Post | null> {
+  const rows = await sql`SELECT * FROM posts WHERE id = ${id} LIMIT 1`
+  return rows.length ? mapPost(rows[0]) : null
+}
+
+export async function createPost(data: Omit<Post, 'createdAt'>): Promise<Post> {
+  const rows = await sql`
+    INSERT INTO posts (id, slug, title, excerpt, content, image, published, created_at)
+    VALUES (${data.id}, ${data.slug}, ${data.title}, ${data.excerpt}, ${data.content}, ${data.image}, ${data.published}, NOW())
+    RETURNING *
+  `
+  return mapPost(rows[0])
+}
+
+export async function updatePost(
+  id: string,
+  updates: Partial<Omit<Post, 'id' | 'createdAt'>>
+): Promise<Post | null> {
+  const existing = await getPostById(id)
+  if (!existing) return null
+  const m = { ...existing, ...updates }
+  const rows = await sql`
+    UPDATE posts SET
+      slug      = ${m.slug},
+      title     = ${m.title},
+      excerpt   = ${m.excerpt},
+      content   = ${m.content},
+      image     = ${m.image},
+      published = ${m.published}
+    WHERE id = ${id}
+    RETURNING *
+  `
+  return rows.length ? mapPost(rows[0]) : null
+}
+
+export async function deletePost(id: string): Promise<void> {
+  await sql`DELETE FROM posts WHERE id = ${id}`
+}
+
 // ─── Site content (CMS) ───────────────────────────────────────────────────────
 
 export async function getSiteContent(): Promise<Record<string, string>> {

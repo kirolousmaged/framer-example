@@ -3,31 +3,7 @@ import { motion } from 'framer-motion'
 import SectionHeader from './SectionHeader'
 import BlogCard from './BlogCard'
 import Button from './Button'
-
-// Seed data — replace with CMS data in production
-const posts = [
-  {
-    id: '1',
-    date: 'Feb 26, 2025',
-    title: "First-Time Homebuyer? Here's What You Need to Know",
-    href: '/blog/first-time-homebuyer',
-    image: 'https://framerusercontent.com/images/XHjb2nvN3Jd2DDPrmmf2kYt3IM.jpg',
-  },
-  {
-    id: '2',
-    date: 'Mar 10, 2025',
-    title: 'Top 5 Neighborhoods in Los Angeles for Luxury Living',
-    href: '/blog/la-luxury-neighborhoods',
-    image: 'https://framerusercontent.com/images/1DvKVpy6gPlZtL3SpcE6uWTvxA.jpg',
-  },
-  {
-    id: '3',
-    date: 'Apr 2, 2025',
-    title: 'How to Stage Your Home for a Quick Sale',
-    href: '/blog/home-staging-tips',
-    image: 'https://framerusercontent.com/images/4207UCMpGfd1yz62fn7VkACtag.jpg',
-  },
-]
+import type { Post } from '@/lib/data'
 
 const containerVariants = {
   hidden: {},
@@ -43,7 +19,19 @@ const cardVariants = {
   },
 }
 
-export default function BlogSection() {
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+export default function BlogSection({ posts }: { posts: Post[] }) {
+  const displayed = posts.slice(0, 3)
+
+  if (displayed.length === 0) return null
+
   return (
     <section className="bg-off-white py-28 md:py-32">
       <div className="mx-auto w-[90%] max-w-screen-xl flex flex-col items-center gap-12">
@@ -59,9 +47,14 @@ export default function BlogSection() {
           whileInView="visible"
           viewport={{ once: true, margin: '-60px' }}
         >
-          {posts.map((post) => (
+          {displayed.map((post) => (
             <motion.div key={post.id} variants={cardVariants}>
-              <BlogCard {...post} />
+              <BlogCard
+                date={formatDate(post.createdAt)}
+                title={post.title}
+                href={`/blog/${post.slug}`}
+                image={post.image}
+              />
             </motion.div>
           ))}
         </motion.div>

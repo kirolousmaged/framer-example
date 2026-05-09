@@ -67,6 +67,18 @@ export async function POST() {
         section TEXT NOT NULL DEFAULT 'general'
       )
     `
+    await sql`
+      CREATE TABLE IF NOT EXISTS posts (
+        id          TEXT PRIMARY KEY,
+        slug        TEXT UNIQUE NOT NULL,
+        title       TEXT NOT NULL,
+        excerpt     TEXT DEFAULT '',
+        content     TEXT DEFAULT '',
+        image       TEXT DEFAULT '',
+        published   BOOLEAN DEFAULT FALSE,
+        created_at  TIMESTAMPTZ DEFAULT NOW()
+      )
+    `
 
     // Seed properties (skip if any exist)
     const existing = await sql`SELECT COUNT(*) as count FROM properties`

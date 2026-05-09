@@ -57,6 +57,18 @@ export async function ensureMigrated() {
         section TEXT NOT NULL DEFAULT 'general'
       )
     `
+    await sql`
+      CREATE TABLE IF NOT EXISTS posts (
+        id          TEXT PRIMARY KEY,
+        slug        TEXT UNIQUE NOT NULL,
+        title       TEXT NOT NULL,
+        excerpt     TEXT DEFAULT '',
+        content     TEXT DEFAULT '',
+        image       TEXT DEFAULT '',
+        published   BOOLEAN DEFAULT FALSE,
+        created_at  TIMESTAMPTZ DEFAULT NOW()
+      )
+    `
     for (const [key, value, label, section] of DEFAULT_CONTENT) {
       await sql`
         INSERT INTO site_content (key, value, label, section)

@@ -3,43 +3,7 @@ import { motion } from 'framer-motion'
 import SectionHeader from './SectionHeader'
 import PropertyCard from './PropertyCard'
 import Button from './Button'
-
-// Seed data — replace with CMS/API data in production
-const properties = [
-  {
-    id: '1',
-    title: '1 Ocean Drive, Miami Beach, FL',
-    beds: 6,
-    baths: 3.5,
-    sqft: '3,600 SQ.FT',
-    price: '$8,750,000',
-    image: 'https://framerusercontent.com/images/XHjb2nvN3Jd2DDPrmmf2kYt3IM.jpg',
-    href: '/featured-properties/ocean-drive',
-    status: 'For Sale' as const,
-  },
-  {
-    id: '2',
-    title: 'Luxury Estate in Beverly Hills',
-    beds: 5,
-    baths: 4,
-    sqft: '5,200 SQ.FT',
-    price: '$12,500,000',
-    image: 'https://framerusercontent.com/images/1DvKVpy6gPlZtL3SpcE6uWTvxA.jpg',
-    href: '/featured-properties/beverly-hills',
-    status: 'Sold' as const,
-  },
-  {
-    id: '3',
-    title: 'Modern Villa, Malibu Cove',
-    beds: 4,
-    baths: 3,
-    sqft: '3,100 SQ.FT',
-    price: '$6,200,000',
-    image: 'https://framerusercontent.com/images/4207UCMpGfd1yz62fn7VkACtag.jpg',
-    href: '/featured-properties/malibu-cove',
-    status: 'For Sale' as const,
-  },
-]
+import type { Property } from '@/lib/data'
 
 const containerVariants = {
   hidden: {},
@@ -55,7 +19,9 @@ const cardVariants = {
   },
 }
 
-export default function FeaturedListings() {
+export default function FeaturedListings({ properties }: { properties: Property[] }) {
+  const displayed = properties.slice(0, 3)
+
   return (
     <section className="bg-white py-28 md:py-32">
       <div className="mx-auto w-[90%] max-w-screen-xl flex flex-col gap-12">
@@ -65,19 +31,34 @@ export default function FeaturedListings() {
           alignment="left"
         />
 
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-60px' }}
-        >
-          {properties.map((property) => (
-            <motion.div key={property.id} variants={cardVariants}>
-              <PropertyCard {...property} />
-            </motion.div>
-          ))}
-        </motion.div>
+        {displayed.length === 0 ? (
+          <p className="font-raleway text-center text-off-black/40 py-12">
+            No listings available yet.
+          </p>
+        ) : (
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-60px' }}
+          >
+            {displayed.map((property) => (
+              <motion.div key={property.id} variants={cardVariants}>
+                <PropertyCard
+                  title={property.title}
+                  beds={property.beds}
+                  baths={property.baths}
+                  sqft={property.sqft}
+                  price={property.price}
+                  image={property.image}
+                  status={property.status}
+                  href={`/featured-properties/${property.slug}`}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
 
         <div className="flex justify-center">
           <Button
