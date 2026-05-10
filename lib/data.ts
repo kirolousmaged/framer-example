@@ -151,6 +151,60 @@ export async function deleteContact(id: string): Promise<void> {
   await sql`DELETE FROM contacts WHERE id = ${id}`
 }
 
+// ─── FAQs ─────────────────────────────────────────────────────────────────────
+
+export interface Faq {
+  id: string
+  question: string
+  answer: string
+  position: number
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapFaq(row: any): Faq {
+  return {
+    id: row.id,
+    question: row.question,
+    answer: row.answer,
+    position: Number(row.position),
+  }
+}
+
+export async function getFaqs(): Promise<Faq[]> {
+  try {
+    const rows = await sql`SELECT * FROM faqs ORDER BY position ASC, id ASC`
+    return rows.map(mapFaq)
+  } catch {
+    return []
+  }
+}
+
+export async function createFaq(data: Omit<Faq, 'position'>): Promise<Faq> {
+  const maxRows = await sql`SELECT COALESCE(MAX(position), -1) as max FROM faqs`
+  const position = Number(maxRows[0].max) + 1
+  const rows = await sql`
+    INSERT INTO faqs (id, question, answer, position)
+    VALUES (${data.id}, ${data.question}, ${data.answer}, ${position})
+    RETURNING *
+  `
+  return mapFaq(rows[0])
+}
+
+export async function updateFaq(id: string, updates: Partial<Omit<Faq, 'id'>>): Promise<Faq | null> {
+  const rows = await sql`SELECT * FROM faqs WHERE id = ${id} LIMIT 1`
+  if (!rows.length) return null
+  const m = { ...mapFaq(rows[0]), ...updates }
+  const updated = await sql`
+    UPDATE faqs SET question = ${m.question}, answer = ${m.answer}, position = ${m.position}
+    WHERE id = ${id} RETURNING *
+  `
+  return updated.length ? mapFaq(updated[0]) : null
+}
+
+export async function deleteFaq(id: string): Promise<void> {
+  await sql`DELETE FROM faqs WHERE id = ${id}`
+}
+
 // ─── Posts (Blog) ─────────────────────────────────────────────────────────────
 
 export interface Post {

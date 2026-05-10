@@ -1,4 +1,4 @@
-import { getSiteContent, getProperties, getPosts } from '@/lib/data'
+import { getSiteContent, getProperties, getPosts, getFaqs } from '@/lib/data'
 import Hero from '@/components/ui/Hero'
 import SolutionsMenu from '@/components/ui/SolutionsMenu'
 import About from '@/components/ui/About'
@@ -10,10 +10,11 @@ import FAQ from '@/components/ui/FAQ'
 import CTA from '@/components/ui/CTA'
 
 export default async function HomePage() {
-  const [content, properties, posts] = await Promise.all([
+  const [content, properties, posts, faqs] = await Promise.all([
     getSiteContent(),
     getProperties(),
     getPosts(true),
+    getFaqs(),
   ])
 
   return (
@@ -29,7 +30,7 @@ export default async function HomePage() {
       <FeaturedListings properties={properties} />
       <Testimonials />
       <BlogSection posts={posts} />
-      <FAQ />
+      <FAQ faqs={faqs} />
       <CTA />
     </>
   )
