@@ -12,12 +12,19 @@ const STATUS_STYLES: Record<string, string> = {
   rejected:  'bg-red-100 text-red-600',
 }
 
+function slugify(str: string) {
+  return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') +
+    '-' + Date.now().toString(36)
+}
+
 export default function SubmissionDetail({ submission: initial }: { submission: PropertySubmission }) {
   const router = useRouter()
   const [submission, setSubmission] = useState(initial)
   const [notes, setNotes] = useState(initial.adminNotes)
   const [saving, setSaving] = useState(false)
   const [lightbox, setLightbox] = useState<number | null>(null)
+  const [createdSlug, setCreatedSlug] = useState<string | null>(null)
+  const [acceptError, setAcceptError] = useState('')
 
   async function updateStatus(status: PropertySubmission['status']) {
     setSaving(true)
@@ -29,6 +36,51 @@ export default function SubmissionDetail({ submission: initial }: { submission: 
     if (res.ok) {
       const updated = await res.json()
       setSubmission(updated)
+      router.refresh()
+    }
+    setSaving(false)
+  }
+
+  async function handleAccept() {
+    setAcceptError('')
+    setSaving(true)
+
+    // 1. Create a property listing from the submission data
+    const propRes = await fetch('/api/properties', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: submission.propertyTitle,
+        slug: slugify(submission.propertyTitle),
+        beds: submission.beds,
+        baths: submission.baths,
+        sqft: submission.sqft || '',
+        price: submission.askingPrice || '',
+        image: submission.images[0] || '',
+        gallery: submission.images,
+        status: 'For Sale',
+        description: submission.description || '',
+      }),
+    })
+
+    if (!propRes.ok) {
+      setAcceptError('Failed to create listing. Please try again.')
+      setSaving(false)
+      return
+    }
+
+    const property = await propRes.json()
+
+    // 2. Mark submission as accepted
+    const subRes = await fetch(`/api/submissions/${submission.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'accepted', adminNotes: notes }),
+    })
+    if (subRes.ok) {
+      const updated = await subRes.json()
+      setSubmission(updated)
+      setCreatedSlug(property.slug)
       router.refresh()
     }
     setSaving(false)
@@ -54,44 +106,57 @@ export default function SubmissionDetail({ submission: initial }: { submission: 
   return (
     <div className="flex flex-col gap-6">
       {/* Status bar */}
-      <div className="bg-white border border-gray-100 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <span className="font-montserrat text-xs text-off-black/50 uppercase tracking-wider">Status:</span>
-          <span className={`text-xs font-montserrat font-medium px-3 py-1.5 capitalize ${STATUS_STYLES[submission.status]}`}>
-            {submission.status}
-          </span>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => updateStatus('contacted')}
-            disabled={saving || submission.status === 'contacted'}
-            className="px-4 py-2 bg-blue-500 text-white font-raleway text-sm font-medium hover:bg-blue-600 transition-colors disabled:opacity-40"
-          >
-            Mark Contacted
-          </button>
-          <button
-            onClick={() => updateStatus('accepted')}
-            disabled={saving || submission.status === 'accepted'}
-            className="px-4 py-2 bg-emerald-500 text-white font-raleway text-sm font-medium hover:bg-emerald-600 transition-colors disabled:opacity-40"
-          >
-            Accept
-          </button>
-          <button
-            onClick={() => updateStatus('rejected')}
-            disabled={saving || submission.status === 'rejected'}
-            className="px-4 py-2 bg-red-500 text-white font-raleway text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-40"
-          >
-            Reject
-          </button>
-          {submission.status === 'accepted' && (
-            <Link
-              href="/admin/properties/new"
-              className="px-4 py-2 bg-accent text-white font-raleway text-sm font-medium hover:bg-accent-hover transition-colors"
+      <div className="bg-white border border-gray-100 p-6 flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="font-montserrat text-xs text-off-black/50 uppercase tracking-wider">Status:</span>
+            <span className={`text-xs font-montserrat font-medium px-3 py-1.5 capitalize ${STATUS_STYLES[submission.status]}`}>
+              {submission.status}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => updateStatus('contacted')}
+              disabled={saving || submission.status === 'contacted'}
+              className="px-4 py-2 bg-blue-500 text-white font-raleway text-sm font-medium hover:bg-blue-600 transition-colors disabled:opacity-40"
             >
-              Create Listing →
-            </Link>
-          )}
+              Mark Contacted
+            </button>
+            <button
+              onClick={handleAccept}
+              disabled={saving || submission.status === 'accepted'}
+              className="px-4 py-2 bg-emerald-500 text-white font-raleway text-sm font-medium hover:bg-emerald-600 transition-colors disabled:opacity-40"
+            >
+              {saving ? 'Creating…' : 'Accept & Create Listing'}
+            </button>
+            <button
+              onClick={() => updateStatus('rejected')}
+              disabled={saving || submission.status === 'rejected'}
+              className="px-4 py-2 bg-red-500 text-white font-raleway text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-40"
+            >
+              Reject
+            </button>
+          </div>
         </div>
+
+        {/* Success banner after acceptance */}
+        {createdSlug && (
+          <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 px-4 py-3">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-600 flex-shrink-0">
+              <path d="M20 6 9 17l-5-5" />
+            </svg>
+            <p className="font-raleway text-sm text-emerald-800">
+              Listing created successfully.{' '}
+              <Link href={`/featured-properties/${createdSlug}`} target="_blank" className="underline hover:no-underline">View on site</Link>
+              {' · '}
+              <Link href={`/admin/properties`} className="underline hover:no-underline">Manage in Properties</Link>
+            </p>
+          </div>
+        )}
+
+        {acceptError && (
+          <p className="font-raleway text-sm text-red-500">{acceptError}</p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
