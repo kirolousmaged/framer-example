@@ -77,6 +77,46 @@ export async function ensureMigrated() {
         position INTEGER NOT NULL DEFAULT 0
       )
     `
+    const postCount = await sql`SELECT COUNT(*) as count FROM posts`
+    if (Number(postCount[0].count) === 0) {
+      const seedPosts = [
+        {
+          id: 'post-1',
+          slug: 'first-time-homebuyer-guide',
+          title: "First-Time Homebuyer? Here's What You Need to Know",
+          excerpt: 'Buying your first home is one of the biggest financial decisions you will ever make. Here is a practical guide to help you navigate the process with confidence.',
+          content: "Buying your first home is one of the biggest financial decisions you'll ever make — and it can feel overwhelming. From securing financing to closing the deal, there are many steps involved. This guide will walk you through everything you need to know.\n\nThe first step is getting pre-approved for a mortgage. This gives you a clear picture of your budget and signals to sellers that you're a serious buyer. Shop around for lenders and compare interest rates, fees, and loan terms before committing.\n\nNext, make a list of your must-haves and nice-to-haves in a home. Think about location, size, school districts, and commute times. Knowing your priorities will save you time and help your agent find the right properties faster.\n\nWhen you find a home you love, your agent will help you make a competitive offer. Don't be discouraged if your first offer isn't accepted — negotiation is a normal part of the process.\n\nOnce your offer is accepted, you'll enter the due diligence period. This is when you'll schedule a home inspection, review the title report, and finalize your mortgage. Stay in close contact with your lender and agent throughout this stage.\n\nFinally, you'll attend closing, sign the paperwork, and receive your keys. Congratulations — you're a homeowner!",
+          image: 'https://framerusercontent.com/images/XHjb2nvN3Jd2DDPrmmf2kYt3IM.jpg',
+          published: true,
+        },
+        {
+          id: 'post-2',
+          slug: 'top-neighborhoods-la-luxury-living',
+          title: 'Top 5 Neighborhoods in Los Angeles for Luxury Living',
+          excerpt: 'From the hills of Bel Air to the shores of Malibu, Los Angeles offers some of the most coveted addresses in the world. Here are the top five neighborhoods for luxury real estate.',
+          content: "Los Angeles is home to some of the most iconic luxury neighborhoods in the world. Whether you're drawn to ocean views, hillside estates, or urban sophistication, there's a corner of LA that fits your lifestyle.\n\n**Bel Air** sits in the hills above Westwood and is synonymous with privacy and prestige. Gated estates, lush greenery, and sweeping city-to-ocean views make it one of LA's most sought-after zip codes.\n\n**Beverly Hills** needs no introduction. The combination of world-class dining, designer shopping on Rodeo Drive, and stunning homes on tree-lined streets makes this a perennial favorite for luxury buyers.\n\n**Malibu** offers 27 miles of Pacific coastline and some of the most dramatic real estate in California. From beachfront bungalows to clifftop compounds, Malibu attracts those who want to live close to nature without sacrificing luxury.\n\n**Pacific Palisades** blends the relaxed pace of a seaside village with the amenities of a major city. It's popular with families who want top-rated schools, hiking trails, and easy access to the beach.\n\n**West Hollywood** is the epicenter of LA's creative scene. Sleek architectural homes, rooftop pools, and proximity to the Sunset Strip make it a top choice for those who want to be in the heart of the action.",
+          image: 'https://framerusercontent.com/images/1DvKVpy6gPlZtL3SpcE6uWTvxA.jpg',
+          published: true,
+        },
+        {
+          id: 'post-3',
+          slug: 'how-to-stage-your-home-for-a-quick-sale',
+          title: 'How to Stage Your Home for a Quick Sale',
+          excerpt: 'A well-staged home sells faster and for more money. These proven tips will help you present your property in its best light and attract serious buyers from day one.',
+          content: "First impressions matter — especially in real estate. A well-staged home not only photographs better but also helps buyers imagine themselves living there. Here are the most effective staging strategies to sell your home quickly and at the best possible price.\n\n**Declutter and depersonalize.** Remove personal photos, excess furniture, and anything that makes the space feel crowded. Buyers need to envision the home as their own, and that's hard to do when it's full of someone else's belongings.\n\n**Deep clean everything.** This sounds obvious, but it's often overlooked. Clean grout, spotless windows, and fresh-smelling rooms signal to buyers that the home has been well maintained.\n\n**Maximize natural light.** Open all blinds and curtains before showings. Replace any burned-out bulbs and consider adding floor lamps to dark corners. Light and airy spaces feel larger and more inviting.\n\n**Focus on curb appeal.** The exterior is the first thing buyers see. Mow the lawn, trim hedges, plant fresh flowers, and give the front door a fresh coat of paint if needed.\n\n**Neutralize bold colors.** If you have rooms painted in strong or unusual colors, consider repainting them in neutral tones like white, greige, or soft grey. Neutral palettes appeal to the widest range of buyers.\n\nThese investments are small compared to the return they generate. Staged homes consistently sell faster and closer to the asking price than unstaged ones.",
+          image: 'https://framerusercontent.com/images/4207UCMpGfd1yz62fn7VkACtag.jpg',
+          published: true,
+        },
+      ]
+      for (const p of seedPosts) {
+        await sql`
+          INSERT INTO posts (id, slug, title, excerpt, content, image, published)
+          VALUES (${p.id}, ${p.slug}, ${p.title}, ${p.excerpt}, ${p.content}, ${p.image}, ${p.published})
+          ON CONFLICT DO NOTHING
+        `
+      }
+    }
+
     const faqCount = await sql`SELECT COUNT(*) as count FROM faqs`
     if (Number(faqCount[0].count) === 0) {
       const seeds = [
