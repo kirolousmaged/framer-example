@@ -63,28 +63,33 @@ export default function FAQ({ faqs }: { faqs: Faq[] }) {
   return (
     <section className="bg-white py-32 md:py-36">
       <div className="mx-auto w-[90%] max-w-screen-xl">
-        <div className="flex flex-col lg:flex-row gap-16 items-start">
-          <div className="lg:w-5/12 flex-shrink-0 flex flex-col gap-8">
-            <SectionHeader preTitle="FAQ's" title="Frequently Asked Questions" alignment="left" />
-            <Button label="See All FAQs" href="/faqs" variant="filled" colorScheme="accent" />
+        <div className="flex flex-col gap-14">
+          <div className="flex flex-col lg:flex-row gap-16 items-start">
+            <div className="lg:w-5/12 flex-shrink-0">
+              <SectionHeader preTitle="FAQ's" title="Frequently Asked Questions" alignment="left" />
+            </div>
+
+            <motion.div
+              className="flex-1 min-w-0 lg:min-w-[500px]"
+              initial={{ opacity: 0, x: 40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+            >
+              {faqs.map((faq, i) => (
+                <AccordionItem
+                  key={faq.id}
+                  item={faq}
+                  isOpen={openIndex === i}
+                  onToggle={() => setOpenIndex(openIndex === i ? null : i)}
+                />
+              ))}
+            </motion.div>
           </div>
 
-          <motion.div
-            className="flex-1 min-w-0 lg:min-w-[500px]"
-            initial={{ opacity: 0, x: 40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-          >
-            {faqs.map((faq, i) => (
-              <AccordionItem
-                key={faq.id}
-                item={faq}
-                isOpen={openIndex === i}
-                onToggle={() => setOpenIndex(openIndex === i ? null : i)}
-              />
-            ))}
-          </motion.div>
+          <div className="flex justify-center">
+            <Button label="See All FAQs" href="/faqs" variant="filled" colorScheme="accent" />
+          </div>
         </div>
       </div>
     </section>
