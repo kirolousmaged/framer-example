@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import SectionHeader from './SectionHeader'
+import Button from './Button'
 import type { Faq } from '@/lib/data'
 
 function AccordionItem({
@@ -63,8 +64,9 @@ export default function FAQ({ faqs }: { faqs: Faq[] }) {
     <section className="bg-white py-32 md:py-36">
       <div className="mx-auto w-[90%] max-w-screen-xl">
         <div className="flex flex-col lg:flex-row gap-16 items-start">
-          <div className="lg:w-5/12 flex-shrink-0">
+          <div className="lg:w-5/12 flex-shrink-0 flex flex-col gap-8">
             <SectionHeader preTitle="FAQ's" title="Frequently Asked Questions" alignment="left" />
+            <Button label="See All FAQs" href="/faqs" variant="filled" colorScheme="accent" />
           </div>
 
           <motion.div
