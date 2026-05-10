@@ -1,5 +1,7 @@
 import { getSiteContent, getProperties, getPosts, getFaqs } from '@/lib/data'
 import type { Faq } from '@/lib/data'
+
+export const dynamic = 'force-dynamic'
 import Hero from '@/components/ui/Hero'
 import SolutionsMenu from '@/components/ui/SolutionsMenu'
 import About from '@/components/ui/About'
