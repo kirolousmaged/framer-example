@@ -16,6 +16,43 @@ const DEFAULT_CONTENT = [
   ['social_instagram', '#', 'Instagram URL', 'social'],
   ['social_facebook', '#', 'Facebook URL', 'social'],
   ['social_youtube', '#', 'YouTube URL', 'social'],
+  ['privacy_policy', `At Olivia Sinclair Real Estate, we are committed to protecting your privacy and handling your personal information with care and transparency. This Privacy Policy explains how we collect, use, and safeguard your data when you interact with our website and services.
+
+Information We Collect
+
+We collect personal information that you voluntarily provide through our contact forms, property inquiry forms, and property submission forms. This may include your name, email address, phone number, property details, and any messages or files you choose to share with us. We may also collect non-personal data such as your browser type, device, and pages visited through standard analytics tools.
+
+How We Use Your Information
+
+Your information is used solely to respond to your inquiries, facilitate real estate transactions, provide market updates you have requested, and improve the quality of our services. We do not use your data for unrelated marketing purposes, and we never sell your information to third parties.
+
+Property Submissions
+
+When you submit a property through our website, the information you provide is used exclusively for the purpose of evaluating your listing request. Your personal contact details will remain confidential and will not be shared with potential buyers. All buyer inquiries and transactions are handled directly by Olivia Sinclair Real Estate to ensure a professional and secure process for all parties.
+
+Information Sharing
+
+Your personal information is not sold, traded, or transferred to outside parties. It may be shared internally with our licensed agents and staff solely for the purpose of serving your real estate needs. We may disclose information when required by law or to protect our legal rights.
+
+Data Security
+
+We implement industry-standard security measures to protect your personal information from unauthorized access, disclosure, or destruction. While we take every reasonable precaution, no method of transmission over the internet can be guaranteed to be 100% secure.
+
+Cookies
+
+Our website may use cookies to enhance your browsing experience and gather anonymous usage analytics. Cookies do not contain personal information. You can disable cookies at any time through your browser settings without affecting your ability to use the site.
+
+Your Rights
+
+You have the right to access, correct, or request deletion of your personal information at any time. To exercise these rights, please contact us directly. We will respond to all requests within a reasonable timeframe.
+
+Changes to This Policy
+
+We reserve the right to update this Privacy Policy at any time. Any updates will be posted on this page with a revised effective date. Your continued use of our website after any changes constitutes your acceptance of the updated policy.
+
+Contact Us
+
+If you have any questions or concerns about this Privacy Policy, please reach out to us through our contact page or by calling our office directly.`, 'Privacy Policy Content', 'legal'],
 ] as const
 
 export async function ensureMigrated() {
@@ -67,6 +104,26 @@ export async function ensureMigrated() {
         image       TEXT DEFAULT '',
         published   BOOLEAN DEFAULT FALSE,
         created_at  TIMESTAMPTZ DEFAULT NOW()
+      )
+    `
+    await sql`
+      CREATE TABLE IF NOT EXISTS property_submissions (
+        id              TEXT PRIMARY KEY,
+        name            TEXT NOT NULL,
+        email           TEXT NOT NULL,
+        phone           TEXT DEFAULT '',
+        property_title  TEXT NOT NULL,
+        address         TEXT DEFAULT '',
+        property_type   TEXT DEFAULT 'House',
+        beds            INTEGER DEFAULT 0,
+        baths           NUMERIC(4,1) DEFAULT 0,
+        sqft            TEXT DEFAULT '',
+        asking_price    TEXT DEFAULT '',
+        description     TEXT DEFAULT '',
+        images          JSONB DEFAULT '[]'::JSONB,
+        status          TEXT DEFAULT 'pending',
+        admin_notes     TEXT DEFAULT '',
+        created_at      TIMESTAMPTZ DEFAULT NOW()
       )
     `
     await sql`

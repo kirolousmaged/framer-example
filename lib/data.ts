@@ -151,6 +151,95 @@ export async function deleteContact(id: string): Promise<void> {
   await sql`DELETE FROM contacts WHERE id = ${id}`
 }
 
+// ─── Property Submissions ─────────────────────────────────────────────────────
+
+export interface PropertySubmission {
+  id: string
+  name: string
+  email: string
+  phone: string
+  propertyTitle: string
+  address: string
+  propertyType: string
+  beds: number
+  baths: number
+  sqft: string
+  askingPrice: string
+  description: string
+  images: string[]
+  status: 'pending' | 'contacted' | 'accepted' | 'rejected'
+  adminNotes: string
+  createdAt: string
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapSubmission(row: any): PropertySubmission {
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    phone: row.phone ?? '',
+    propertyTitle: row.property_title,
+    address: row.address ?? '',
+    propertyType: row.property_type ?? 'House',
+    beds: Number(row.beds),
+    baths: Number(row.baths),
+    sqft: row.sqft ?? '',
+    askingPrice: row.asking_price ?? '',
+    description: row.description ?? '',
+    images: Array.isArray(row.images) ? row.images : [],
+    status: row.status as PropertySubmission['status'],
+    adminNotes: row.admin_notes ?? '',
+    createdAt: row.created_at,
+  }
+}
+
+export async function getSubmissions(): Promise<PropertySubmission[]> {
+  try {
+    const rows = await sql`SELECT * FROM property_submissions ORDER BY created_at DESC`
+    return rows.map(mapSubmission)
+  } catch {
+    return []
+  }
+}
+
+export async function getSubmissionById(id: string): Promise<PropertySubmission | null> {
+  const rows = await sql`SELECT * FROM property_submissions WHERE id = ${id} LIMIT 1`
+  return rows.length ? mapSubmission(rows[0]) : null
+}
+
+export async function createSubmission(
+  data: Omit<PropertySubmission, 'status' | 'adminNotes' | 'createdAt'>
+): Promise<PropertySubmission> {
+  const images = JSON.stringify(data.images ?? [])
+  const rows = await sql`
+    INSERT INTO property_submissions
+      (id, name, email, phone, property_title, address, property_type, beds, baths, sqft, asking_price, description, images, status, admin_notes, created_at)
+    VALUES
+      (${data.id}, ${data.name}, ${data.email}, ${data.phone}, ${data.propertyTitle}, ${data.address}, ${data.propertyType}, ${data.beds}, ${data.baths}, ${data.sqft}, ${data.askingPrice}, ${data.description}, ${images}::jsonb, 'pending', '', NOW())
+    RETURNING *
+  `
+  return mapSubmission(rows[0])
+}
+
+export async function updateSubmission(
+  id: string,
+  updates: Partial<Pick<PropertySubmission, 'status' | 'adminNotes'>>
+): Promise<PropertySubmission | null> {
+  const existing = await getSubmissionById(id)
+  if (!existing) return null
+  const m = { ...existing, ...updates }
+  const rows = await sql`
+    UPDATE property_submissions SET status = ${m.status}, admin_notes = ${m.adminNotes}
+    WHERE id = ${id} RETURNING *
+  `
+  return rows.length ? mapSubmission(rows[0]) : null
+}
+
+export async function deleteSubmission(id: string): Promise<void> {
+  await sql`DELETE FROM property_submissions WHERE id = ${id}`
+}
+
 // ─── FAQs ─────────────────────────────────────────────────────────────────────
 
 export interface Faq {

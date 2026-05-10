@@ -10,6 +10,8 @@ const navLinks = [
   { label: "Let's Connect", href: '/contact' },
 ]
 
+const ctaLink = { label: 'List Your Property', href: '/sell' }
+
 export default function Navbar() {
   const pathname = usePathname()
   const isHome = pathname === '/'
@@ -63,7 +65,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-12">
+          <nav className="hidden md:flex items-center gap-10">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -75,6 +77,16 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            <Link
+              href={ctaLink.href}
+              className={`font-raleway text-sm font-medium px-5 py-2.5 border transition-colors duration-300 ${
+                showTransparent
+                  ? 'border-white/60 text-white hover:bg-white hover:text-off-black'
+                  : 'border-accent text-accent hover:bg-accent hover:text-white'
+              }`}
+            >
+              {ctaLink.label}
+            </Link>
           </nav>
 
           {/* Hamburger — mobile only */}
@@ -111,7 +123,7 @@ export default function Navbar() {
             transition={{ duration: 0.3 }}
             className="fixed inset-0 z-40 bg-black flex flex-col items-center justify-center gap-10 md:hidden"
           >
-            {navLinks.map((link, i) => (
+            {[...navLinks, ctaLink].map((link, i) => (
               <motion.div
                 key={link.href}
                 initial={{ opacity: 0, y: 20 }}

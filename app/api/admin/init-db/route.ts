@@ -68,6 +68,26 @@ export async function POST() {
       )
     `
     await sql`
+      CREATE TABLE IF NOT EXISTS property_submissions (
+        id              TEXT PRIMARY KEY,
+        name            TEXT NOT NULL,
+        email           TEXT NOT NULL,
+        phone           TEXT DEFAULT '',
+        property_title  TEXT NOT NULL,
+        address         TEXT DEFAULT '',
+        property_type   TEXT DEFAULT 'House',
+        beds            INTEGER DEFAULT 0,
+        baths           NUMERIC(4,1) DEFAULT 0,
+        sqft            TEXT DEFAULT '',
+        asking_price    TEXT DEFAULT '',
+        description     TEXT DEFAULT '',
+        images          JSONB DEFAULT '[]'::JSONB,
+        status          TEXT DEFAULT 'pending',
+        admin_notes     TEXT DEFAULT '',
+        created_at      TIMESTAMPTZ DEFAULT NOW()
+      )
+    `
+    await sql`
       CREATE TABLE IF NOT EXISTS posts (
         id          TEXT PRIMARY KEY,
         slug        TEXT UNIQUE NOT NULL,
