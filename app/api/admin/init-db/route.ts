@@ -109,6 +109,24 @@ export async function POST() {
       `
     }
 
+    // Seed FAQs (skip if any exist)
+    const faqCount = await sql`SELECT COUNT(*) as count FROM faqs`
+    if (Number(faqCount[0].count) === 0) {
+      const SEED_FAQS = [
+        { id: 'faq-1', question: 'How do I schedule a property tour?', answer: 'You can schedule a tour by filling out the contact form on our website or calling us directly. One of our agents will get in touch to confirm the date and time that works best for you.', position: 0 },
+        { id: 'faq-2', question: 'How long does the home-buying process take?', answer: 'The timeline varies, but on average, it takes between 30 to 60 days from the time you make an offer to the closing date. Factors such as loan approval, home inspections, and negotiations can affect the timeline.', position: 1 },
+        { id: 'faq-3', question: 'Do you handle rentals as well?', answer: "Yes, we assist with both property rentals and purchases. Whether you're looking for a short-term lease, a long-term rental, or a rent-to-own option, our agents can help you find the perfect home.", position: 2 },
+        { id: 'faq-4', question: 'How do I know if a property is a good investment?', answer: "A good investment property typically has strong potential for appreciation, is located in a desirable area, and generates a steady rental income. It's important to consider factors like market trends, property condition, and long-term growth potential before making a decision.", position: 3 },
+      ]
+      for (const f of SEED_FAQS) {
+        await sql`
+          INSERT INTO faqs (id, question, answer, position)
+          VALUES (${f.id}, ${f.question}, ${f.answer}, ${f.position})
+          ON CONFLICT DO NOTHING
+        `
+      }
+    }
+
     return NextResponse.json({ success: true, message: 'Database initialized successfully.' })
   } catch (err) {
     console.error('init-db error', err)
